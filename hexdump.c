@@ -25,7 +25,7 @@
  * This is MVar implementation in C and pthread.
  */
 
-#include <string.h>
+#include <stdio.h>
 
 #include "hexdump.h"
 
