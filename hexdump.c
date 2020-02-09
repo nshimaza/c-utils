@@ -25,9 +25,9 @@
  * This is MVar implementation in C and pthread.
  */
 
-#include <stdio.h>
-#include <stdint.h>
 #include <string.h>
+
+#include "hexdump.h"
 
 size_t
 hexdump(char* const out_str, const size_t max_len, const uint8_t* const src, const size_t src_len) {
