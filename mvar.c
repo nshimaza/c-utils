@@ -41,6 +41,19 @@ initMVar(void* const out_mvar, write_callback write, read_callback read) {
     v->read = read;
 }
 
+void
+mVar_abs_write(void* const mvar_context, const void* const user_data) {
+}
+
+void
+mVar_abs_read(void* const out_user_data, void* const mvar_context) {
+}
+
+void
+initMVar_unit(MVar_abs* const out_mvar) {
+    initMVar(out_mvar, mVar_abs_write, mVar_abs_read);
+}
+
 bool
 isEmptyMVar(const void* const mvar) {
     return ((const MVar_abs*) mvar)->empty;
@@ -64,8 +77,7 @@ putMVar(void* const mvar, const void* const user_data) {
 }
 
 int
-readMVar(void* const mvar, void* const out_user_data)
-{
+readMVar(void* const out_user_data, void* const mvar) {
     MVar_abs* const v = mvar;
     int err = pthread_mutex_lock(&v->lock);
     if (err != 0) {
@@ -74,14 +86,13 @@ readMVar(void* const mvar, void* const out_user_data)
     if (v->empty) {
         pthread_cond_wait(&v->takeCond, &v->lock);
     }
-    v->read(v, out_user_data);
+    v->read(out_user_data, v);
     pthread_mutex_unlock(&v->lock);
     return 0;
 }
 
 int
-takeMVar(void* const mvar, void* const out_user_data)
-{
+takeMVar(void* const out_user_data, void* const mvar) {
     MVar_abs* const v = mvar;
     int err = pthread_mutex_lock(&v->lock);
     if (err != 0) {
@@ -90,7 +101,7 @@ takeMVar(void* const mvar, void* const out_user_data)
     if (v->empty) {
         pthread_cond_wait(&v->takeCond, &v->lock);
     }
-    v->read(v, out_user_data);
+    v->read(out_user_data, v);
     v->empty = true;
     pthread_cond_signal(&v->putCond);
     pthread_mutex_unlock(&v->lock);
@@ -109,7 +120,7 @@ int
 timedPutMVar(void* const mvar, const long int timeout_in_msec, const void* const user_data) {
     struct timespec now;
     timespec_get(&now, TIME_UTC);
-    struct timespec tout = timespec_add(now, timeout_in_msec * 1000);
+    struct timespec tout = timespec_add(now, timeout_in_msec * 1000000);
     MVar_abs* const v = mvar;
     int err = pthread_mutex_timedlock(&v->lock, &tout);
     if (err != 0) {
@@ -131,10 +142,10 @@ timedPutMVar(void* const mvar, const long int timeout_in_msec, const void* const
 }
 
 int
-timedReadMVar(void* const mvar, const long int timeout_in_msec, void* const out_user_data) {
+timedReadMVar(void* const out_user_data, void* const mvar, const long int timeout_in_msec) {
     struct timespec now;
     timespec_get(&now, TIME_UTC);
-    struct timespec tout = timespec_add(now, timeout_in_msec * 1000);
+    struct timespec tout = timespec_add(now, timeout_in_msec * 1000000);
     MVar_abs* const v = mvar;
     int err = pthread_mutex_timedlock(&v->lock, &tout);
     if (err != 0) {
@@ -148,16 +159,16 @@ timedReadMVar(void* const mvar, const long int timeout_in_msec, void* const out_
             return err;
         }
     }
-    v->read(v, out_user_data);
+    v->read(out_user_data, v);
     pthread_mutex_unlock(&v->lock);
     return 0;
 }
 
 int
-timedTakeMVar(void* const mvar, const long int timeout_in_msec, void* const out_user_data) {
+timedTakeMVar(void* const out_user_data, void* const mvar, const long int timeout_in_msec) {
     struct timespec now;
     timespec_get(&now, TIME_UTC);
-    struct timespec tout = timespec_add(now, timeout_in_msec * 1000);
+    struct timespec tout = timespec_add(now, timeout_in_msec * 1000000);
     MVar_abs* const v = mvar;
     int err = pthread_mutex_timedlock(&v->lock, &tout);
     if (err != 0) {
@@ -171,7 +182,7 @@ timedTakeMVar(void* const mvar, const long int timeout_in_msec, void* const out_
             return err;
         }
     }
-    v->read(v, out_user_data);
+    v->read(out_user_data, v);
     v->empty = true;
     pthread_cond_signal(&v->putCond);
     pthread_mutex_unlock(&v->lock);
@@ -200,7 +211,7 @@ tryPutMVar(void* mvar, const void* const user_data)
 }
 
 int
-tryReadMVar(void* const mvar, void* const out_user_data)
+tryReadMVar(void* const out_user_data, void* const mvar)
 {
     MVar_abs* const v = mvar;
     int err = pthread_mutex_trylock(&v->lock);
@@ -213,13 +224,13 @@ tryReadMVar(void* const mvar, void* const out_user_data)
         pthread_mutex_unlock(&v->lock);
         return EBUSY;
     }
-    v->read(v, out_user_data);
+    v->read(out_user_data, v);
     pthread_mutex_unlock(&v->lock);
     return 0;
 }
 
 int
-tryTakeMVar(void* const mvar, void* const out_user_data)
+tryTakeMVar(void* const out_user_data, void* const mvar)
 {
     MVar_abs* const v = mvar;
     int err = pthread_mutex_trylock(&v->lock);
@@ -232,7 +243,7 @@ tryTakeMVar(void* const mvar, void* const out_user_data)
         pthread_mutex_unlock(&v->lock);
         return EBUSY;
     }
-    v->read(v, out_user_data);
+    v->read(out_user_data, v);
     v->empty = true;
     pthread_cond_signal(&v->putCond);
     pthread_mutex_unlock(&v->lock);

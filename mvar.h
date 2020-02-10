@@ -32,7 +32,7 @@
 #include <pthread.h>
 
 typedef void (*write_callback)(void* const mvar_context, const void* const user_data);
-typedef void (*read_callback)(void* const mvar_context, void* const out_user_data);
+typedef void (*read_callback)(void* const out_user_data, void* const mvar_context);
 
 typedef struct {
     pthread_mutex_t lock;
@@ -44,15 +44,17 @@ typedef struct {
 } MVar_abs;
 
 void initMVar(void* const out_mvar, write_callback put, read_callback read);
+// Initialize MVar with no context.  Emulates MVar ().
+void initMVar_unit(MVar_abs* const out_mvar);
 bool isEmptyMVar(const void* const mvar);
 int putMVar(void* const mvar, const void* const user_data);
-int readMVar(void* const mvar, void* const out_user_data);
-int takeMVar(void* const mvar, void* const out_user_data);
+int readMVar(void* const out_user_data, void* const mvar);
+int takeMVar(void* const out_user_data, void* const mvar);
 int timedPutMVar(void* const mvar, const long int timeout_in_msec, const void* const user_data);
-int timedReadMVar(void* const mvar, const long int timeout_in_msec, void* const out_user_data);
-int timedTakeMVar(void* const mvar, const long int timeout_in_msec, void* const out_user_data);
+int timedReadMVar(void* const out_user_data, void* const mvar, const long int timeout_in_msec);
+int timedTakeMVar(void* const out_user_data, void* const mvar, const long int timeout_in_msec);
 int tryPutMVar(void* mvar, const void* const user_data);
-int tryReadMVar(void* const mvar, void* const out_user_data);
-int tryTakeMVar(void* const mvar, void* const out_user_data);
+int tryReadMVar(void* const out_user_data, void* const mvar);
+int tryTakeMVar(void* const out_user_data, void* const mvar);
 
 #endif
