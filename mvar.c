@@ -20,11 +20,12 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
-
- * MVar is one element only thread safe queue.
- * This is MVar implementation in C and pthread.
  */
 
+//
+//  MVar is one element only thread safe queue.
+//  This is MVar implementation in C and pthread.
+//
 #include <errno.h>
 #include <time.h>
 
